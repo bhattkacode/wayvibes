@@ -1,5 +1,6 @@
 # Wayvibes
 A wayland native C++ CLI which plays mechanical keyboard sounds (or custom sounds) on keypresses.
+It uses libevdev to get keypresses and [miniaudio](https://miniaud.io) to play sounds.
 
 ## Currently Work In Progress
 
