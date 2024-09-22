@@ -8,6 +8,8 @@ A wayland native C++ CLI which plays mechanical keyboard sounds (or custom sound
 ## Prerequisites:
 - libevdev
 
+`g++ -o main main.cpp -levdev`
+
 # Usage
 `./main <soundpack_path> -v <volume(1.0-10.0)>`
 For specifying your input device again, run `./main --prompt`
