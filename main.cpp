@@ -20,7 +20,7 @@ using json = nlohmann::json;
 // Global engine instance
 ma_engine engine;
 
-float defaultVolume = 2.0f;
+float defaultVolume = 1.0f;
 
 // Function to play sound asynchronously
 void playSound(const char *soundFile, float volume) {
