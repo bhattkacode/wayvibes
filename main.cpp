@@ -4,13 +4,13 @@
 #include <cstring>
 #include <dirent.h>
 #include <fcntl.h>
-#include <filesystem> // For filesystem operations
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <libevdev-1.0/libevdev/libevdev.h>
 #include <nlohmann/json.hpp>
 #include <string>
-#include <sys/stat.h> // For mkdir
+#include <sys/stat.h>
 #include <unistd.h>
 #include <unordered_map>
 #include <vector>
@@ -26,25 +26,20 @@ float defaultVolume = 1.0f;
 void playSound(const char *soundFile, float volume) {
   ma_sound *sound = new ma_sound; // Allocate sound on the heap
 
-  // Initialize the sound and attach it to the engine
   if (ma_sound_init_from_file(&engine, soundFile, MA_SOUND_FLAG_ASYNC, NULL,
                               NULL, sound) != MA_SUCCESS) {
     std::cerr << "Failed to initialize sound: " << soundFile << std::endl;
-    delete sound; // Clean up allocated sound object if initialization fails
+    delete sound;
     return;
   }
 
-  // Set the volume for the sound
   ma_sound_set_volume(sound, volume);
 
-  // Play the sound asynchronously
   if (ma_sound_start(sound) != MA_SUCCESS) {
     std::cerr << "Failed to play sound: " << soundFile << std::endl;
     ma_sound_uninit(sound);
-    delete sound; // Clean up allocated memory
+    delete sound;
   }
-
-  // The sound will play asynchronously and we let it clean up automatically
 }
 
 // Function to load the key-sound mappings from config.json
@@ -62,10 +57,9 @@ loadKeySoundMappings(const std::string &configPath) {
     json configJson;
     configFile >> configJson;
 
-    // Parse the "defines" field in the JSON
     if (configJson.contains("defines")) {
       for (auto &[key, value] : configJson["defines"].items()) {
-        int keyCode = std::stoi(key); // Convert string key to integer
+        int keyCode = std::stoi(key);
         if (!value.is_null()) {
           std::string soundFile = value.get<std::string>();
           keySoundMap[keyCode] = soundFile;
@@ -79,7 +73,7 @@ loadKeySoundMappings(const std::string &configPath) {
   return keySoundMap;
 }
 
-// Function to list input devices and filter for keyboards
+// Function to prompt user for a keyboard device
 std::string findKeyboardDevice() {
   DIR *dir = opendir("/dev/input");
   if (!dir) {
@@ -103,7 +97,6 @@ std::string findKeyboardDevice() {
     return "";
   }
 
-  // Display available keyboard devices
   std::cout << "Available keyboard input devices:" << std::endl;
   for (const auto &device : devices) {
     std::string devicePath = "/dev/input/" + device;
@@ -122,7 +115,6 @@ std::string findKeyboardDevice() {
       continue;
     }
 
-    // Check if the device is a keyboard
     if (libevdev_has_event_type(dev, EV_KEY)) {
       std::cout << device << ": " << libevdev_get_name(dev) << std::endl;
     }
@@ -134,7 +126,6 @@ std::string findKeyboardDevice() {
   std::string selectedDevice;
   bool validChoice = false;
 
-  // Loop until a valid choice is made
   while (!validChoice) {
     std::cout << "Select a keyboard input device (1-" << devices.size()
               << "): ";
@@ -149,7 +140,7 @@ std::string findKeyboardDevice() {
     }
   }
 
-  return selectedDevice; // Return the selected device
+  return selectedDevice;
 }
 
 // Function to get the input device path
@@ -159,12 +150,10 @@ std::string getInputDevicePath(std::string &configDir) {
                              : std::string(getenv("HOME")) + "/.config") +
               "/wayvibes";
 
-  // Create the directory if it doesn't exist
   if (!std::filesystem::exists(configDir)) {
     std::filesystem::create_directories(configDir);
   }
 
-  // Check for the input_device_path file
   std::string inputFilePath = configDir + "/input_device_path";
   std::ifstream inputFile(inputFilePath);
 
@@ -172,10 +161,9 @@ std::string getInputDevicePath(std::string &configDir) {
     std::string devicePath;
     std::getline(inputFile, devicePath);
     inputFile.close();
-    return devicePath; // Return the found device path
+    return devicePath;
   }
 
-  // If the file does not exist, return an empty string
   return "";
 }
 
@@ -189,24 +177,22 @@ int main(int argc, char *argv[]) {
   // Check for arguments
   for (int i = 1; i < argc; i++) {
     if (std::string(argv[i]) == "--prompt") {
-      promptUser = true; // Set flag if --prompt is provided
+      promptUser = true;
     } else if (std::string(argv[i]) == "-v" && (i + 1) < argc) {
       try {
-        volume = std::stof(argv[i + 1]); // Convert to float
-        i++;                             // Skip the next argument
+        volume = std::stof(argv[i + 1]);
+        i++;
       } catch (...) {
         std::cerr << "Invalid volume argument. Using default volume."
                   << std::endl;
       }
     } else if (argv[i][0] != '-') {
-      soundpackPath = argv[i]; // Set the sound pack path
+      soundpackPath = argv[i];
     }
   }
 
-  // Clamp the volume
   volume = std::clamp(volume, 0.0f, 10.0f);
 
-  // Initialize the audio engine
   if (ma_engine_init(NULL, &engine) != MA_SUCCESS) {
     std::cerr << "Failed to initialize audio engine" << std::endl;
     return 1;
@@ -228,7 +214,6 @@ int main(int argc, char *argv[]) {
                 << std::endl;
       std::string selectedDevice = findKeyboardDevice();
       if (!selectedDevice.empty()) {
-        // Write the selected device path to the file
         std::ofstream outputFile(configDir + "/input_device_path");
         outputFile << "/dev/input/" << selectedDevice;
         outputFile.close();
@@ -236,7 +221,7 @@ int main(int argc, char *argv[]) {
       }
     }
     if (!devicePath.empty()) {
-      break; // Exit the loop if a valid device path is found
+      break;
     }
   }
 
@@ -259,13 +244,10 @@ int main(int argc, char *argv[]) {
     struct input_event ev;
     rc = libevdev_next_event(dev, LIBEVDEV_READ_FLAG_NORMAL, &ev);
     if (rc == 0) {
-      if (ev.type == EV_KEY && ev.value == 1) { // Key press event
-        // Check if the keycode exists in the mapping
+      if (ev.type == EV_KEY && ev.value == 1) {
         if (keySoundMap.find(ev.code) != keySoundMap.end()) {
-          std::string soundFile =
-              soundpackPath + "/" + keySoundMap[ev.code]; // Construct full path
-          playSound(soundFile.c_str(),
-                    volume); // Play the sound for the keycode
+          std::string soundFile = soundpackPath + "/" + keySoundMap[ev.code];
+          playSound(soundFile.c_str(), volume);
         } else {
           std::cerr << "No sound mapped for keycode: " << ev.code << std::endl;
         }
@@ -276,7 +258,6 @@ int main(int argc, char *argv[]) {
   libevdev_free(dev);
   close(fd);
 
-  // Clean up the audio engine when done
   ma_engine_uninit(&engine);
   return 0;
 }
