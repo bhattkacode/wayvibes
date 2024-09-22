@@ -9,6 +9,7 @@ Wayvibes is a Wayland-native CLI that plays mechanical keyboard sounds (or custo
 #### Prerequisites:
 
 - `libevdev`
+- `nlohmann-json`
 
 To compile the project, use the following command: 
 
