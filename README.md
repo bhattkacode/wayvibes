@@ -67,4 +67,4 @@ Wayvibes is compatible with the Mechvibes soundpack format. You can find soundpa
 
 ### Why Wayvibes?
 
-Unlike mechvibes and rustyvibes, which have [issues](https://github.com/KunalBagaria/rustyvibes/issues/23) running on Wayland, Wayvibes aims to provide a seamless integration with wayland.
+Unlike [mechvibes](https://mechvibes.com) and [rustyvibes](https://github.com/KunalBagaria/rustyvibes), which have [issues](https://github.com/KunalBagaria/rustyvibes/issues/23) running on Wayland, Wayvibes aims to provide a seamless integration with wayland.
