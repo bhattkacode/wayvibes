@@ -18,14 +18,14 @@ g++ -o main main.cpp -levdev
 
 ### Usage
 
-## Important
-First, add user to the input group by the following command:
+## First Steps
+Add user to the `input` group by the following command:
 
 ```bash
 sudo usermod -a -G input <your_username>
 ```
 
-Then **REBOOT** or **Logout**.
+Then **REBOOT** or **Login again**.
 
 Run the application with the following command: 
 
