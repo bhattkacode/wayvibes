@@ -1,31 +1,55 @@
 # Wayvibes
-A wayland native C++ CLI which plays mechanical keyboard sounds (or custom sounds) on keypresses.
-It uses libevdev to get keypresses and [miniaudio](https://miniaud.io) to play sounds.
 
-## Currently Work In Progress
+Wayvibes is a Wayland-native C++ command-line interface (CLI) that plays mechanical keyboard sounds (or custom sounds) globally on keypresses. It leverages `libevdev` to capture keypress events and `miniaudio` to play sound effects.
 
-# Compiling
+## Currently Work in Progress
 
-## Prerequisites:
-- libevdev
+### Compiling
 
-`g++ -o main main.cpp -levdev`
+#### Prerequisites:
 
-# Usage
-`./main <soundpack_path> -v <volume(1.0-10.0)>`
+- `libevdev`
 
-Example: `./main ./akko_lavender_purples/ -v 3`
+To compile the project, use the following command: 
 
-Default soundpack path: `./`
+```bash
+g++ -o main main.cpp -levdev
+```
 
-Default volume: `2`
+### Usage
 
-For specifying your input device again, run `./main --prompt`
+Run the application with the following command: 
 
-It will be stored in $XDG_CONFIG_HOME/wayvibes/input_device_path
+```bash
+./main <soundpack_path> -v <volume(1.0-10.0)>
+```
 
-# Get Soundpacks
-Wayvibes is compatible with mechvibes soundpacks format. So you can get them from [Mechvibes Soundpacks](https://docs.google.com/spreadsheets/d/1PimUN_Qn3CWqfn-93YdVW8OWy8nzpz3w3me41S8S494) and there [discord](https://discord.com/invite/MMVrhWxa4w) for more soundpacks
+**Example:** 
 
-# Why wayvibes?
-mechvibes and rustyvibes has [ issues ](https://github.com/KunalBagaria/rustyvibes/issues/23) working on wayland.
+```bash
+./main ./akko_lavender_purples/ -v 3
+```
+
+### Default Settings:
+
+- **Soundpack Path:** `./`
+- **Volume:** `2`
+
+To specify your input device again, run: 
+
+```bash
+./main --prompt
+```
+
+This will store the device path in `$XDG_CONFIG_HOME/wayvibes/input_device_path`.
+
+### Get Soundpacks
+
+Wayvibes is compatible with the Mechvibes soundpack format. You can find soundpacks from the following sources:
+
+- Mechvibes Soundpacks
+- Discord Community
+
+### Why Wayvibes?
+
+Unlike mechvibes and rustyvibes, which have issues running on Wayland, Wayvibes aims to provide a seamless experience for users on this platform.
