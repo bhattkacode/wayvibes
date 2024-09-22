@@ -1,10 +1,6 @@
 # Wayvibes
 
-Wayvibes is a Wayland-native C++ command-line interface (CLI) that plays mechanical keyboard sounds (or custom sounds) globally on keypresses. It leverages `libevdev` to capture keypress events and [miniaudio](https://miniaud.io) to play sound effects.
-
-
-
-
+Wayvibes is a Wayland-native CLI that plays mechanical keyboard sounds (or custom sounds) globally on keypresses. It leverages `libevdev` to capture keypress events and [miniaudio](https://miniaud.io) to play sound effects.
 
 ## Currently Work in Progress
 
@@ -34,7 +30,7 @@ Then **REBOOT** or **Logout**.
 Run the application with the following command: 
 
 ```bash
-./main <soundpack_path> -v <volume(1.0-10.0)>
+./main <soundpack_path> -v <volume(0.0-10.0)>
 ```
 
 **Example:** 
@@ -49,15 +45,18 @@ Run the application with the following command:
 ### Default Settings:
 
 - **Soundpack Path:** `./`
-- **Volume:** `2`
+- **Volume:** `1`
 
-To specify your input device again, run: 
+It will prompt you for your input device on the first run, and store it in `$XDG_CONFIG_HOME/wayvibes/input_device_path`.
+
+The input device will usually be `HID ... keyboard` or `USB ... keyboard`. If you are using any key remapper, you have to select its virtual keyboard device.(Eg: `keyd virtual keyboard`)
+
+**To specify your input device again, run:**
 
 ```bash
 ./main --prompt
 ```
 
-This will store the device path in `$XDG_CONFIG_HOME/wayvibes/input_device_path`.
 
 ### Get Soundpacks
 
@@ -68,4 +67,4 @@ Wayvibes is compatible with the Mechvibes soundpack format. You can find soundpa
 
 ### Why Wayvibes?
 
-Unlike mechvibes and rustyvibes, which have [issues](https://github.com/KunalBagaria/rustyvibes/issues/23) running on Wayland, Wayvibes aims to provide a seamless experience for users on this platform.
+Unlike mechvibes and rustyvibes, which have [issues](https://github.com/KunalBagaria/rustyvibes/issues/23) running on Wayland, Wayvibes aims to provide a seamless integration with wayland.
