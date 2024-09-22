@@ -22,6 +22,15 @@ g++ -o main main.cpp -levdev
 
 ### Usage
 
+## Important
+First, add user to the input group by the following command:
+
+```bash
+sudo usermod -a -G input <your_username>
+```
+
+Then **REBOOT** or **Logout**.
+
 Run the application with the following command: 
 
 ```bash
@@ -33,6 +42,9 @@ Run the application with the following command:
 ```bash
 ./main ./akko_lavender_purples/ -v 3
 ```
+
+## WARNING:
+**Do not run the program with root privileges as it will monopolize the audio device until reboot!**
 
 ### Default Settings:
 
