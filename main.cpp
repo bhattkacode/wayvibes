@@ -96,9 +96,9 @@ std::string findKeyboardDevices() {
     return "";
   }
 
-  std::cout << "Available keyboard input devices:" << std::endl;
-  for (const auto &device : devices) {
-    std::string devicePath = "/dev/input/" + device;
+  std::cout << "Available input devices:" << std::endl;
+  for (size_t i = 0; i < devices.size(); ++i) {
+    std::string devicePath = "/dev/input/" + devices[i];
     struct libevdev *dev = nullptr;
     int fd = open(devicePath.c_str(), O_RDONLY);
     if (fd < 0) {
@@ -115,7 +115,8 @@ std::string findKeyboardDevices() {
     }
 
     if (libevdev_has_event_type(dev, EV_KEY)) {
-      std::cout << device << ": " << libevdev_get_name(dev) << std::endl;
+      std::cout << (i) << ". " << libevdev_get_name(dev) << " (event"
+                << devices[i].substr(5) << ")" << std::endl;
     }
 
     libevdev_free(dev);
@@ -126,13 +127,13 @@ std::string findKeyboardDevices() {
   bool validChoice = false;
 
   while (!validChoice) {
-    std::cout << "Select a keyboard input device (1-" << devices.size()
+    std::cout << "Select a keyboard input device (1-" << devices.size() - 1
               << "): ";
     int choice;
     std::cin >> choice;
 
     if (choice >= 1 && choice <= devices.size()) {
-      selectedDevice = devices[choice - 1];
+      selectedDevice = devices[choice];
       validChoice = true;
     } else {
       std::cerr << "Invalid choice. Please try again." << std::endl;
