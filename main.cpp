@@ -20,11 +20,9 @@ using json = nlohmann::json;
 // Global engine instance
 ma_engine engine;
 
-float defaultVolume = 1.0f;
-
 // Function to play sound asynchronously
 void playSound(const char *soundFile, float volume) {
-  ma_sound *sound = new ma_sound; // Allocate sound on the heap
+  ma_sound *sound = new ma_sound;
 
   if (ma_sound_init_from_file(&engine, soundFile, MA_SOUND_FLAG_ASYNC, NULL,
                               NULL, sound) != MA_SUCCESS) {
@@ -49,7 +47,9 @@ loadKeySoundMappings(const std::string &configPath) {
 
   std::ifstream configFile(configPath);
   if (!configFile.is_open()) {
-    std::cerr << "Could not open config.json file!" << std::endl;
+    std::cerr
+        << "Could not open config.json file! Is the soundpack path correct?"
+        << std::endl;
     return keySoundMap;
   }
 
@@ -83,7 +83,7 @@ std::string findKeyboardDevices() {
   std::vector<std::string> devices;
   struct dirent *entry;
 
-  // Read all input device names
+  // Get all input device files
   while ((entry = readdir(dir)) != NULL) {
     if (strncmp(entry->d_name, "event", 5) == 0) {
       devices.push_back(entry->d_name);
@@ -137,7 +137,7 @@ std::string findKeyboardDevices() {
 
   if (filteredDevices.size() == 1) {
     std::cout << "Selecting this keyboard device." << std::endl;
-    return filteredDevices[0]; // Return the only device without prompting
+    return filteredDevices[0];
   }
 
   std::string selectedDevice;
@@ -151,7 +151,7 @@ std::string findKeyboardDevices() {
     std::cin >> choice;
 
     if (choice >= 1 && choice <= filteredDevices.size()) {
-      selectedDevice = filteredDevices[choice - 1]; // Adjust for 0-based index
+      selectedDevice = filteredDevices[choice - 1];
       validChoice = true;
     } else {
       std::cerr << "Invalid choice. Please try again." << std::endl;
@@ -161,17 +161,7 @@ std::string findKeyboardDevices() {
   return selectedDevice;
 }
 
-// Function to get the input device path
 std::string getInputDevicePath(std::string &configDir) {
-  const char *xdgConfigHome = std::getenv("XDG_CONFIG_HOME");
-  configDir = (xdgConfigHome ? xdgConfigHome
-                             : std::string(getenv("HOME")) + "/.config") +
-              "/wayvibes";
-
-  if (!std::filesystem::exists(configDir)) {
-    std::filesystem::create_directories(configDir);
-  }
-
   std::string inputFilePath = configDir + "/input_device_path";
   std::ifstream inputFile(inputFilePath);
 
@@ -185,7 +175,6 @@ std::string getInputDevicePath(std::string &configDir) {
   return "";
 }
 
-// Function to prompt user for a keyboard device and save it
 void promptAndSaveInputDevice(std::string &configDir) {
   std::cout << "Please select a keyboard input device." << std::endl;
   std::string selectedDevice = findKeyboardDevices();
@@ -201,7 +190,6 @@ void promptAndSaveInputDevice(std::string &configDir) {
   }
 }
 
-// Function to run the main event loop
 void runMainLoop(const std::string &devicePath,
                  const std::unordered_map<int, std::string> &keySoundMap,
                  float volume, const std::string &soundpackPath) {
@@ -243,14 +231,20 @@ void runMainLoop(const std::string &devicePath,
 int main(int argc, char *argv[]) {
   // Default soundpack path and volume
   std::string soundpackPath = "./";
-  float volume = defaultVolume;
+  float volume = 1.0f;
   std::string configDir;
-  // bool promptUser = false;
+  const char *xdgConfigHome = std::getenv("XDG_CONFIG_HOME");
+  configDir = (xdgConfigHome ? xdgConfigHome
+                             : std::string(getenv("HOME")) + "/.config") +
+              "/wayvibes";
 
-  // Check for arguments
+  if (!std::filesystem::exists(configDir)) {
+    std::filesystem::create_directories(configDir);
+  }
+
+  // Argument handling
   for (int i = 1; i < argc; i++) {
     if (std::string(argv[i]) == "--prompt") {
-      // promptUser = true;
       promptAndSaveInputDevice(configDir);
       return 0;
     } else if (std::string(argv[i]) == "-v" && (i + 1) < argc) {
