@@ -83,6 +83,7 @@ std::string findKeyboardDevices() {
   std::vector<std::string> devices;
   struct dirent *entry;
 
+  // Read all input device names
   while ((entry = readdir(dir)) != NULL) {
     if (strncmp(entry->d_name, "event", 5) == 0) {
       devices.push_back(entry->d_name);
@@ -96,8 +97,12 @@ std::string findKeyboardDevices() {
     return "";
   }
 
-  std::cout << "Available input devices:" << std::endl;
-  for (size_t i = 0; i < devices.size(); ++i) {
+  std::vector<std::string> filteredDevices;
+
+  std::cout << "Available Keyboard devices:" << std::endl;
+
+  // Loop through the devices, filter and display those with the KEY_A event
+  for (size_t i = 0, displayIndex = 1; i < devices.size(); ++i) {
     std::string devicePath = "/dev/input/" + devices[i];
     struct libevdev *dev = nullptr;
     int fd = open(devicePath.c_str(), O_RDONLY);
@@ -114,26 +119,39 @@ std::string findKeyboardDevices() {
       continue;
     }
 
-    if (libevdev_has_event_type(dev, EV_KEY)) {
-      std::cout << (i) << ". " << libevdev_get_name(dev) << " (event"
+    if (libevdev_has_event_code(dev, EV_KEY, KEY_A)) {
+      std::cout << displayIndex << ". " << libevdev_get_name(dev) << " (event"
                 << devices[i].substr(5) << ")" << std::endl;
+      filteredDevices.push_back(devices[i]);
+      displayIndex++;
     }
 
     libevdev_free(dev);
     close(fd);
   }
 
+  if (filteredDevices.empty()) {
+    std::cerr << "No suitable keyboard input devices found!" << std::endl;
+    return "";
+  }
+
+  if (filteredDevices.size() == 1) {
+    std::cout << "Selecting this keyboard device." << std::endl;
+    return filteredDevices[0]; // Return the only device without prompting
+  }
+
   std::string selectedDevice;
   bool validChoice = false;
 
+  // Prompt for selection if there are multiple devices
   while (!validChoice) {
-    std::cout << "Select a keyboard input device (1-" << devices.size() - 1
+    std::cout << "Select a keyboard input device (1-" << filteredDevices.size()
               << "): ";
     int choice;
     std::cin >> choice;
 
-    if (choice >= 1 && choice <= devices.size()) {
-      selectedDevice = devices[choice];
+    if (choice >= 1 && choice <= filteredDevices.size()) {
+      selectedDevice = filteredDevices[choice - 1]; // Adjust for 0-based index
       validChoice = true;
     } else {
       std::cerr << "Invalid choice. Please try again." << std::endl;
