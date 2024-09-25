@@ -57,8 +57,8 @@ Typically, the input device will be something like `AT Translated Set 2 keyboard
 To reset and prompt for input device selection again, use:
 
 ```bash 
-wayvibes --prompt```
-
+wayvibes --prompt
+```
 
 ### **Important**:
 **Do not run the program with root privileges as it will monopolize the audio device until reboot.**
