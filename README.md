@@ -1,6 +1,6 @@
 # Wayvibes
 
-Wayvibes is a Wayland-native CLI that plays mechanical keyboard sounds (or custom sounds) globally on keypresses. It utilizes `libevdev` to capture keypress events and [miniaudio](https://miniaud.io) to play sounds.
+Wayvibes is a Wayland-native CLI made in C++ that plays mechanical keyboard sounds (or custom sounds) globally on keypresses. It utilizes `libevdev` to capture keypress events and [miniaudio](https://miniaud.io) to play sounds.
 
 ## Installing
 
