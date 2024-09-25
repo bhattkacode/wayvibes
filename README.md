@@ -22,7 +22,7 @@ sudo make install
 
 ## Usage
 
-## Initial Setup
+### Initial Setup
 1. Add user to the `input` group by the following command:
 
 ```bash
