@@ -76,7 +76,7 @@ sudo cp wayvibes /usr/local/bin # to add the executable to PATH
 Wayvibes is compatible with the Mechvibes soundpack format. So, You can find soundpacks from the following sources:
 
 - [Mechvibes Soundpacks](https://docs.google.com/spreadsheets/d/1PimUN_Qn3CWqfn-93YdVW8OWy8nzpz3w3me41S8S494)
-- [Discord Community](https://discord.com/invite/MMVrhWxa4w) (got akko_lavender_purples soundpack from there)
+- [Discord Community](https://discord.com/invite/MMVrhWxa4w) (got akko_lavender_purples soundpack from here)
 
 ## Why Wayvibes?
 
