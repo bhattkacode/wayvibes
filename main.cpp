@@ -263,10 +263,9 @@ int main(int argc, char *argv[]) {
   std::string devicePath = getInputDevicePath(configDir);
 
   if (devicePath.empty()) {
-    std::cout << "No device found. Please run with --prompt to select a "
-                 "keyboard input device."
-              << std::endl;
-    return 1;
+    std::cout << "No device found. Prompting user." << std::endl;
+    promptAndSaveInputDevice(configDir);
+    devicePath = getInputDevicePath(configDir);
   }
 
   runMainLoop(devicePath, keySoundMap, volume, soundpackPath);
