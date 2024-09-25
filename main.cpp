@@ -73,8 +73,7 @@ loadKeySoundMappings(const std::string &configPath) {
   return keySoundMap;
 }
 
-// Function to prompt user for a keyboard device
-std::string findKeyboardDevice() {
+std::string findKeyboardDevices() {
   DIR *dir = opendir("/dev/input");
   if (!dir) {
     std::cerr << "Failed to open /dev/input directory" << std::endl;
@@ -133,7 +132,7 @@ std::string findKeyboardDevice() {
     std::cin >> choice;
 
     if (choice >= 1 && choice <= devices.size()) {
-      selectedDevice = devices[choice];
+      selectedDevice = devices[choice - 1];
       validChoice = true;
     } else {
       std::cerr << "Invalid choice. Please try again." << std::endl;
@@ -167,17 +166,74 @@ std::string getInputDevicePath(std::string &configDir) {
   return "";
 }
 
+// Function to prompt user for a keyboard device and save it
+void promptAndSaveInputDevice(std::string &configDir) {
+  std::cout << "Please select a keyboard input device." << std::endl;
+  std::string selectedDevice = findKeyboardDevices();
+  if (!selectedDevice.empty()) {
+    std::ofstream outputFile(configDir + "/input_device_path");
+    outputFile << "/dev/input/" << selectedDevice;
+    outputFile.close();
+    std::cout << "Device path saved: /dev/input/" << selectedDevice
+              << std::endl;
+  } else {
+    std::cerr << "No device selected. Exiting." << std::endl;
+    exit(1);
+  }
+}
+
+// Function to run the main event loop
+void runMainLoop(const std::string &devicePath,
+                 const std::unordered_map<int, std::string> &keySoundMap,
+                 float volume, const std::string &soundpackPath) {
+  int fd = open(devicePath.c_str(), O_RDONLY);
+  if (fd < 0) {
+    std::cerr << "Error: Cannot open device " << devicePath << std::endl;
+    return;
+  }
+  std::cout << "Using " << devicePath << std::endl;
+
+  struct libevdev *dev = NULL;
+  int rc = libevdev_new_from_fd(fd, &dev);
+  if (rc < 0) {
+    std::cerr << "Error: Failed to create evdev device" << std::endl;
+    close(fd);
+    return;
+  }
+  std::cout << "Device Name: " << libevdev_get_name(dev) << std::endl;
+
+  while (true) {
+    struct input_event ev;
+    rc = libevdev_next_event(dev, LIBEVDEV_READ_FLAG_NORMAL, &ev);
+    if (rc == 0) {
+      if (ev.type == EV_KEY && ev.value == 1) {
+        if (keySoundMap.find(ev.code) != keySoundMap.end()) {
+          std::string soundFile = soundpackPath + "/" + keySoundMap.at(ev.code);
+          playSound(soundFile.c_str(), volume);
+        } else {
+          std::cerr << "No sound mapped for keycode: " << ev.code << std::endl;
+        }
+      }
+    }
+  }
+
+  libevdev_free(dev);
+  close(fd);
+}
+
 int main(int argc, char *argv[]) {
   // Default soundpack path and volume
   std::string soundpackPath = "./";
   float volume = defaultVolume;
-  std::string configDir;   // Define configDir here
-  bool promptUser = false; // Flag to check if user wants to be prompted again
+  std::string configDir;
+  // bool promptUser = false;
 
   // Check for arguments
   for (int i = 1; i < argc; i++) {
     if (std::string(argv[i]) == "--prompt") {
-      promptUser = true;
+      // promptUser = true;
+      promptAndSaveInputDevice(configDir);
+      return 0;
     } else if (std::string(argv[i]) == "-v" && (i + 1) < argc) {
       try {
         volume = std::stof(argv[i + 1]);
@@ -199,64 +255,21 @@ int main(int argc, char *argv[]) {
   }
 
   // Load key-sound mappings from config.json
-  std::cout << "Soundpack path: " << soundpackPath << std::endl;
+  std::cout << "Soundpack: " << soundpackPath << std::endl;
   std::string configFilePath = soundpackPath + "/config.json";
   std::unordered_map<int, std::string> keySoundMap =
       loadKeySoundMappings(configFilePath);
 
-  std::string devicePath;
+  std::string devicePath = getInputDevicePath(configDir);
 
-  // Get the input device path
-  while (true) {
-    devicePath = getInputDevicePath(configDir);
-    if (devicePath.empty() || promptUser) {
-      std::cout << "No device found. Please select a keyboard input device."
-                << std::endl;
-      std::string selectedDevice = findKeyboardDevice();
-      if (!selectedDevice.empty()) {
-        std::ofstream outputFile(configDir + "/input_device_path");
-        outputFile << "/dev/input/" << selectedDevice;
-        outputFile.close();
-        devicePath = "/dev/input/" + selectedDevice;
-      }
-    }
-    if (!devicePath.empty()) {
-      break;
-    }
-  }
-
-  // Open the selected input device
-  int fd = open(devicePath.c_str(), O_RDONLY);
-  if (fd < 0) {
-    std::cerr << "Error: Cannot open device " << devicePath << std::endl;
-    return 1;
-  }
-  std::cout << "Using " << devicePath << std::endl;
-
-  struct libevdev *dev = NULL;
-  int rc = libevdev_new_from_fd(fd, &dev);
-  if (rc < 0) {
-    std::cerr << "Error: Failed to create evdev device" << std::endl;
+  if (devicePath.empty()) {
+    std::cout << "No device found. Please run with --prompt to select a "
+                 "keyboard input device."
+              << std::endl;
     return 1;
   }
 
-  while (true) {
-    struct input_event ev;
-    rc = libevdev_next_event(dev, LIBEVDEV_READ_FLAG_NORMAL, &ev);
-    if (rc == 0) {
-      if (ev.type == EV_KEY && ev.value == 1) {
-        if (keySoundMap.find(ev.code) != keySoundMap.end()) {
-          std::string soundFile = soundpackPath + "/" + keySoundMap[ev.code];
-          playSound(soundFile.c_str(), volume);
-        } else {
-          std::cerr << "No sound mapped for keycode: " << ev.code << std::endl;
-        }
-      }
-    }
-  }
-
-  libevdev_free(dev);
-  close(fd);
+  runMainLoop(devicePath, keySoundMap, volume, soundpackPath);
 
   ma_engine_uninit(&engine);
   return 0;

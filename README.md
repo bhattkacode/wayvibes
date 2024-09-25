@@ -8,8 +8,8 @@ Wayvibes is a Wayland-native CLI that plays mechanical keyboard sounds (or custo
 
 #### Prerequisites:
 
-- `libevdev`
-- `nlohmann-json`
+- `libevdev` (`libevdev-devel` on debian/fedora)
+- `nlohmann-json` (`nlohmann-json-devel` on debian/fedora)
 
 To compile the project, use the following command: 
 
