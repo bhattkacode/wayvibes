@@ -60,6 +60,9 @@ To reset and prompt for input device selection again, use:
 wayvibes --prompt
 ```
 
+**Note that input device will change after reboot if you plug in/out any other device, so use --prompt when this happens**
+
+
 ### **Important**:
 **Do not run the program with root privileges as it will monopolize the audio device until reboot.**
 
