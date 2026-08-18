@@ -210,3 +210,7 @@ rm *.ogg # remove ogg files
 ## Why Wayvibes?
 
 Unlike [mechvibes](https://mechvibes.com) and [rustyvibes](https://github.com/KunalBagaria/rustyvibes), which encounter [issues](https://github.com/KunalBagaria/rustyvibes/issues/23) on Wayland, Wayvibes aims to provide a seamless integration with wayland.
+
+## Community Projects
+
+- [wayvibes-tui](https://github.com/caml07/wayvibes-tui): A native Rust TUI for Wayvibes (Ratatui). Allows browsing soundpacks, selecting input and output keyboard/audio devices, and start/stop/restart Wayvibes from a nice interface.
