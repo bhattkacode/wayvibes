@@ -37,7 +37,7 @@ int remapMechToLinuxKey(int mechCode) {
     return KEY_HOME;
   case 60999:
     return KEY_HOME;
-  case 3665: // End
+  case 3663: // End
     return KEY_END;
   case 61007:
     return KEY_END;
@@ -45,7 +45,7 @@ int remapMechToLinuxKey(int mechCode) {
     return KEY_PAGEUP;
   case 61001:
     return KEY_PAGEUP;
-  case 3663: // PgDn
+  case 3665: // PgDn
     return KEY_PAGEDOWN;
   case 61009:
     return KEY_PAGEDOWN;
