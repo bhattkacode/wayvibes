@@ -159,45 +159,60 @@ systemctl --user restart wayvibes.service
 
 ## Get Soundpacks
 
-Wayvibes is compatible with the Mechvibes soundpack format. So, You can find soundpacks from the following sources:
+Wayvibes is compatible with the Mechvibes soundpack format, in both flavors:
+
+- **V1 (classic Mechvibes):** `defines` maps key codes to one wav file per key.
+- **V2 (MechvibesDX):** Plays sounds on key down too. `definitions` maps W3C key names (`KeyA`, `Space`, ...) to `[start_ms, end_ms]` slices inside a single `audio_file`. Pack type is auto-detected, so existing V1 packs keep working untouched.
+
+V2 behavior notes:
+
+- `timing[0]` plays on key press, `timing[1]` on key release. Keys with a single timing play on press only.
+- `options.recommended_volume` is the base volume unless `-v` is passed (CLI wins). `options.random_pitch` jitters pitch +-10% per hit.
+- Mouse packs (`MouseLeft`, `MouseRight`, ...) need the mouse event node passed as the device. Wheel events are ignored (evdev reports those as `EV_REL`, not key events).
+- `definition_method: multi` is not sliced. Per-key audio files play whole instead.
+
+You can find soundpacks from the following sources:
 
 - [Mechvibes Soundpacks](https://docs.google.com/spreadsheets/d/1PimUN_Qn3CWqfn-93YdVW8OWy8nzpz3w3me41S8S494)
+- [MechvibesDX](https://github.com/hainguyents13/mechvibes-dx) (V2 packs)
 - [Discord Community](https://discord.com/invite/MMVrhWxa4w) (got akko_lavender_purples soundpack from here)
-
-### Note
-
-Some soundpacks with single audio file configuration won't work, use [this tool](https://github.com/KunalBagaria/packfixer-rustyvibes) to convert them into a compatible format
 
 ### Pre-converted Soundpacks
 
-Ready-to-use soundpacks (already converted to wav format) are available in the [`soundpacks/`](./soundpacks/) directory of this repository. Just clone the repo and point wayvibes to the pack:
+Ready-to-use soundpacks are available in this repository. Just clone the repo and point wayvibes to the pack:
 
 ```bash
 wayvibes ~/wayvibes/soundpacks/nk-cream/ -v 3
+wayvibes ~/wayvibes/soundpacks/eg-oreo/ -v 3
 ```
 
-Available packs:
+V1 packs in [`soundpacks/`](./soundpacks/):
 
 - akko_lavender_purples
 - apex pro
 - banana split lubed / stock
 - boxjade
-- cherrymx-black-abs / cherrymx-black-pbt
-- cherrymx-blue-abs / cherrymx-blue-pbt
-- cherrymx-brown-pbt
-- cherrymx-red-abs / cherrymx-red-pbt
+- cherrymx-red-pbt
 - Creams
-- eg-crystal-purple
-- eg-oreo
 - kalih-box-white
 - mx-speed-silver
 - nk-cream
 - Razer Green (Blackwidow Elite) - Akira
+
+V2 packs, same directory (mouse packs live in [`soundpacks/mouse/`](./soundpacks/mouse/)):
+
+- cherrymx-black-abs / cherrymx-black-pbt
+- cherrymx-blue-abs / cherrymx-blue-pbt
+- cherrymx-brown-abs / cherrymx-brown-pbt
+- cherrymx-red-abs
+- eg-crystal-purple
+- eg-oreo
 - topre-purple-hybrid-pbt
+- mouse: chat / ping / vibrate / wooden
 
 ### Ogg files incompatibility
 
-Wayvibes uses miniaudio to play sounds, which doesn't support all ogg files by default. So, you need to convert ogg files to wav/mp3 files using `ffmpeg` or `sox`, and change the extensions in the `config.json` file. Use this command for this:
+Wayvibes uses miniaudio to play sounds, which doesn't support all ogg files by default. If a pack's audio won't decode, wayvibes offers to convert it to wav with `ffmpeg` on first launch (one-time, updates the pack's config automatically). Or do it by hand:
 
 Converting ogg files to wav using `ffmpeg` and change extensions in `config.json`:
 

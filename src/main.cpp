@@ -21,9 +21,12 @@ void printHelp() {
             << std::endl;
 }
 
+static float clampVolume(float v) { return std::clamp(v, 0.0f, 10.0f); }
+
 int main(int argc, char *argv[]) {
   std::string soundpackPath = "./";
-  float volume = 1.0f;
+  float cliVolume = 1.0f;
+  bool volumePassed = false;
   std::string configDir;
   std::string targetDeviceName = "";
   bool silent = false;
@@ -44,7 +47,8 @@ int main(int argc, char *argv[]) {
       i++;
     } else if (std::string(argv[i]) == "-v" && (i + 1) < argc) {
       try {
-        volume = std::stof(argv[i + 1]);
+        cliVolume = std::stof(argv[i + 1]);
+        volumePassed = true;
         i++;
       } catch (...) {
         std::cerr << "Invalid volume argument. Using default volume(1.0)." << std::endl;
@@ -81,16 +85,18 @@ int main(int argc, char *argv[]) {
     freopen("/dev/null", "w", stderr);
   }
 
-  volume = std::clamp(volume, 0.0f, 10.0f);
-
   if (initializeAudioEngine() != MA_SUCCESS) {
     if (!silent) std::cerr << "Failed to initialize audio engine" << std::endl;
     return 1;
   }
 
-  if (!silent) std::cout << "Soundpack: " << soundpackPath << std::endl;
-  std::unordered_map<int, std::string> keySoundMap =
-      loadKeySoundMappings(soundpackPath + "/config.json");
+  std::string configPath = soundpackPath + "/config.json";
+  std::string detectErr;
+  PackVersion version = detectPackVersion(configPath, detectErr);
+  if (version == PackVersion::Invalid) {
+    if (!silent) std::cerr << detectErr << std::endl;
+    return 1;
+  }
 
   std::string devicePath;
 
@@ -112,7 +118,38 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  runMainLoop(devicePath, keySoundMap, volume, soundpackPath);
+  if (version == PackVersion::V2) {
+    V2Pack pack;
+    std::string err;
+    if (!loadV2Pack(configPath, pack, err)) {
+      if (!silent) std::cerr << err << std::endl;
+      return 1;
+    }
+    // CLI -v wins, otherwise the pack's recommended_volume is the base volume.
+    float volume = clampVolume(volumePassed ? cliVolume : pack.recommendedVolume);
+
+    std::unordered_map<int, KeySound> keySounds;
+    std::unordered_map<int, std::string> fallbackFiles;
+    if (!loadV2Clips(pack, soundpackPath, keySounds, fallbackFiles, err)) {
+      if (!silent) std::cerr << err << std::endl;
+      return 1;
+    }
+
+    if (!silent) {
+      std::cout << "Soundpack: " << pack.name << " by " << pack.author << " (V2, "
+                << pack.soundpackType << ", " << keySounds.size() << " keys";
+      if (!fallbackFiles.empty()) std::cout << ", " << fallbackFiles.size() << " files";
+      std::cout << ")" << std::endl;
+      if (pack.randomPitch) std::cout << "Random pitch enabled." << std::endl;
+    }
+    runMainLoopV2(devicePath, keySounds, fallbackFiles, volume, pack.randomPitch);
+  } else {
+    if (!silent) std::cout << "Soundpack: " << soundpackPath << " (V1)" << std::endl;
+    float volume = clampVolume(volumePassed ? cliVolume : 1.0f);
+    std::unordered_map<int, std::string> keySoundMap = loadKeySoundMappings(configPath);
+    ensureV1FilesPlayable(configPath, soundpackPath, keySoundMap);
+    runMainLoop(devicePath, keySoundMap, volume, soundpackPath);
+  }
 
   ma_engine_uninit(&engine);
   return 0;
